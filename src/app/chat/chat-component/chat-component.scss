@@ -1,0 +1,101 @@
+.chat-shell {
+  display: flex;
+  height: 100vh;
+  background-color: var(--bg-primary);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Sidebar default (desktop) */
+app-sidebar {
+  width: auto;
+  flex-shrink: 0;
+  background-color: var(--bg-secondary);
+  display: flex;
+  flex-direction: column;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.chat-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+  height: 100%;
+  position: relative;
+  min-height: 0;
+
+  /* Internal centering for large screens if needed, 
+     but usually chat fills the space after sidebar */
+  max-width: 100%;
+}
+
+.chat-header {
+  padding: 16px 24px;
+  border-bottom: 1px solid #eef2f7;
+  background-color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  .title-area h1 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a1a1a;
+  }
+}
+
+.menu-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+/* Overlay */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 19;
+  opacity: 0;
+  animation: fadeIn 0.2s forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+  app-sidebar {
+    position: fixed;
+    left: -260px;
+    top: 0;
+    height: 100%;
+    z-index: 20;
+    transition: transform 0.3s ease;
+    transform: translateX(0);
+    will-change: transform;
+    box-shadow: 4px 0 10px rgba(0, 0, 0, 0.05);
+  }
+
+  app-sidebar.open {
+    transform: translateX(260px);
+  }
+
+  .menu-btn {
+    display: block;
+  }
+}

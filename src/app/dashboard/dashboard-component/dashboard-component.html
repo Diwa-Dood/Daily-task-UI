@@ -1,0 +1,283 @@
+<div class="dashboard-shell">
+    <app-sidebar></app-sidebar>
+
+    <div class="dashboard-container">
+        <!-- Top Filter Bar -->
+        <header class="filter-bar shadow-sm">
+            <div class="filter-group">
+                <h2>Team Productivity Dashboard – Lead View</h2>
+            </div>
+            <div class="controls">
+                <div class="select-wrapper">
+                    <select [(ngModel)]="selectedLead" (change)="onLeadChange()">
+                        <option>All Teams</option>
+                        <option>Lead 1 Team</option>
+                        <option>Lead 2 Team</option>
+                    </select>
+                </div>
+                <div class="select-wrapper">
+                    <select [(ngModel)]="selectedDate">
+                        <option>Today</option>
+                        <option>Yesterday</option>
+                        <option>This Week</option>
+                        <option>This Month</option>
+                        <option>Custom Range</option>
+                    </select>
+                </div>
+                <button class="export-btn" (click)="exportToExcel()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    Export to Excel
+                </button>
+            </div>
+        </header>
+
+        <main class="dashboard-content">
+            <!-- Section: Attention Required -->
+            <section class="attention-required"
+                *ngIf="missingLogsMembers.length > 0 || (worstPerformer && worstPerformer.score < 50)">
+                <div class="alert-card critical" *ngIf="missingLogsMembers.length > 0">
+                    <div class="alert-icon">⚠️</div>
+                    <div class="alert-info">
+                        <h4>Missing Worklogs</h4>
+                        <div class="missing-list">
+                            <span class="member-tag" *ngFor="let m of missingLogsMembers"
+                                (click)="openMemberDetails(m)">
+                                {{m.name}}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="alert-action">Attention Needed</div>
+                </div>
+
+                <div class="alert-card low-perf" *ngIf="worstPerformer && worstPerformer.score < 50">
+                    <div class="alert-icon">📉</div>
+                    <div class="alert-info">
+                        <h4>Critical Performance Alert</h4>
+                        <p><strong>{{worstPerformer.name}}</strong> has a productivity score of
+                            <strong>{{worstPerformer.score}}%</strong>. High blockers or low task volume detected.</p>
+                    </div>
+                    <button class="alert-btn" (click)="openMemberDetails(worstPerformer)">Fix Issues</button>
+                </div>
+            </section>
+
+            <!-- Section 1: KPI Cards -->
+            <section class="kpi-grid">
+                <div class="kpi-card">
+                    <span class="label">Team Members</span>
+                    <span class="value">{{kpis.teamMembers}}</span>
+                    <div class="icon-bg blue">👥</div>
+                </div>
+                <div class="kpi-card">
+                    <span class="label">Tasks Done</span>
+                    <span class="value">{{kpis.tasksDone}}</span>
+                    <div class="icon-bg green">✅</div>
+                </div>
+                <div class="kpi-card">
+                    <span class="label">In Progress</span>
+                    <span class="value">{{kpis.inProgressTasks}}</span>
+                    <div class="icon-bg blue">⏳</div>
+                </div>
+                <div class="kpi-card">
+                    <span class="label">Blocked</span>
+                    <span class="value">{{kpis.blockedTasks}}</span>
+                    <div class="icon-bg red">🚫</div>
+                </div>
+                <div class="kpi-card">
+                    <span class="label">Hours Logged</span>
+                    <span class="value">{{kpis.totalHours}}h</span>
+                    <div class="icon-bg gray">⏱️</div>
+                </div>
+                <div class="kpi-card">
+                    <span class="label">Productivity Score</span>
+                    <span class="value">{{kpis.productivityScore}}%</span>
+                    <div class="icon-bg green">📈</div>
+                </div>
+            </section>
+
+            <!-- Section 2: Analytics Charts -->
+            <section class="charts-row">
+                <div class="chart-card">
+                    <h3>Hours per Member</h3>
+                    <div class="bar-chart">
+                        <div class="bar-row" *ngFor="let m of members$ | async | slice:0:6">
+                            <span class="name">{{m.avatar}}</span>
+                            <div class="bar-container">
+                                <div class="bar" [style.width.%]="(m.hours/45)*100"></div>
+                            </div>
+                            <span class="val">{{m.hours}}h</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <h3>Daily Productivity Trend</h3>
+                    <div class="line-chart-mock">
+                        <svg viewBox="0 0 300 100" class="line-svg">
+                            <polyline fill="none" stroke="#10a37f" stroke-width="2"
+                                points="0,80 50,60 100,70 150,40 200,50 250,30 300,45" />
+                            <circle cx="0" cy="80" r="2" fill="#10a37f" />
+                            <circle cx="50" cy="60" r="2" fill="#10a37f" />
+                            <circle cx="100" cy="70" r="2" fill="#10a37f" />
+                            <circle cx="150" cy="40" r="2" fill="#10a37f" />
+                            <circle cx="200" cy="50" r="2" fill="#10a37f" />
+                            <circle cx="250" cy="30" r="2" fill="#10a37f" />
+                            <circle cx="300" cy="45" r="2" fill="#10a37f" />
+                        </svg>
+                        <div class="x-axis">
+                            <span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <h3>Jira Status Distribution</h3>
+                    <div class="donut-chart">
+                        <div class="donut-svg-wrapper">
+                            <svg viewBox="0 0 40 40" class="donut">
+                                <circle class="donut-ring" cx="20" cy="20" r="15.915" fill="transparent"
+                                    stroke="#eef2f7" stroke-width="4"></circle>
+                                <circle class="donut-segment" cx="20" cy="20" r="15.915" fill="transparent"
+                                    stroke="#10a37f" stroke-width="4" stroke-dasharray="70 30" stroke-dashoffset="25">
+                                </circle>
+                            </svg>
+                            <div class="donut-center">
+                                <span class="total">{{kpis.tasksDone + kpis.inProgressTasks + kpis.blockedTasks}}</span>
+                                <span class="sub">Tasks</span>
+                            </div>
+                        </div>
+                        <div class="legend">
+                            <div class="item"><span class="dot done"></span> Done: {{kpis.tasksDone}}</div>
+                            <div class="item"><span class="dot progress"></span> In Progress: {{kpis.inProgressTasks}}
+                            </div>
+                            <div class="item"><span class="dot blocked"></span> Blocked: {{kpis.blockedTasks}}</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 3: Performance Table -->
+            <section class="table-card shadow-sm">
+                <div class="table-header">
+                    <h3>Team Performance</h3>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Member</th>
+                                <th>Done</th>
+                                <th>In Progress</th>
+                                <th>Blocked</th>
+                                <th>Hours</th>
+                                <th>Score</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let m of members$ | async" (click)="openMemberDetails(m)">
+                                <td>
+                                    <div class="member-cell">
+                                        <div class="avatar-sm">{{m.avatar}}</div>
+                                        <span class="name">{{m.name}}</span>
+                                    </div>
+                                </td>
+                                <td>{{m.done}}</td>
+                                <td>{{m.inProgress}}</td>
+                                <td>{{m.blocked}}</td>
+                                <td>{{m.hours}}h</td>
+                                <td>
+                                    <div class="score-bar">
+                                        <div class="fill" [style.width.%]="m.score" [class.low]="m.score < 80"></div>
+                                        <span>{{m.score}}%</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="status-badge" [ngClass]="m.status.toLowerCase()">
+                                        {{m.status}}
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Member Details Drawer -->
+    <aside class="drawer-overlay" *ngIf="showDrawer" (click)="closeDrawer()">
+        <div class="drawer" (click)="$event.stopPropagation()">
+            <header class="drawer-header">
+                <h3>Member Details</h3>
+                <button class="close-btn" (click)="closeDrawer()">✕</button>
+            </header>
+
+            <div class="drawer-content" *ngIf="selectedMember">
+                <div class="profile-summary">
+                    <div class="avatar-lg">{{selectedMember.avatar}}</div>
+                    <h4>{{selectedMember.name}}</h4>
+                    <span class="role">Software Engineer</span>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat">
+                        <span class="val">{{selectedMember.hours}}h</span>
+                        <span class="lab">Total Hours</span>
+                    </div>
+                    <div class="stat">
+                        <span class="val">{{selectedMember.done}}</span>
+                        <span class="lab">Completed</span>
+                    </div>
+                    <div class="stat">
+                        <span class="val">{{selectedMember.blocked}}</span>
+                        <span class="lab">Blockers</span>
+                    </div>
+                    <div class="stat">
+                        <span class="val">{{selectedMember.score}}%</span>
+                        <span class="lab">Score</span>
+                    </div>
+                </div>
+
+                <div class="task-section">
+                    <h5>Daily Task Logs</h5>
+                    <div class="mini-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Jira</th>
+                                    <th>Status</th>
+                                    <th>Hours</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let t of selectedMember.tasks || []">
+                                    <td>{{t.jira}}</td>
+                                    <td><span class="badge">{{t.status}}</span></td>
+                                    <td>{{t.hours}}h</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="ai-insight">
+                    <div class="insight-header">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z">
+                            </path>
+                            <path d="M12 6v6l4 2"></path>
+                        </svg>
+                        AI Insight
+                    </div>
+                    <p>{{selectedMember.name}} has {{selectedMember.done}} completed tasks and
+                        {{selectedMember.inProgress}} in
+                        progress. One blocker needs attention.</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+</div>

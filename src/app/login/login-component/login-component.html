@@ -1,0 +1,45 @@
+<div class="login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <h1>AI Daily Work Log</h1>
+      <p class="tagline">Track your productivity with intelligent insights</p>
+    </div>
+
+    <form class="login-form" #loginForm="ngForm" (submit)="loginForm.form.valid && login(); $event.preventDefault()">
+      <div *ngIf="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input id="email" type="email" placeholder="you@company.com" [(ngModel)]="email" name="email" required email
+          #emailInput="ngModel" [class.invalid]="emailInput.invalid && emailInput.touched" />
+        <div *ngIf="emailInput.invalid && emailInput.touched" class="field-error">
+          Please enter a valid email address
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input id="password" type="password" placeholder="Enter your password" [(ngModel)]="password" name="password"
+          required #passwordInput="ngModel" [class.invalid]="passwordInput.invalid && passwordInput.touched" />
+        <div *ngIf="passwordInput.invalid && passwordInput.touched" class="field-error">
+          Password is required
+        </div>
+      </div>
+
+      <button type="submit" class="login-btn" [disabled]="loginForm.invalid || isLoading">
+        <span *ngIf="!isLoading">Login</span>
+        <span *ngIf="isLoading">Logging in...</span>
+      </button>
+    </form>
+
+    <div class="login-footer">
+      <p>Secure enterprise authentication</p>
+    </div>
+  </div>
+
+  <!-- Setup Form Modal -->
+  <app-setup-form *ngIf="showSetupForm" (setupComplete)="onSetupComplete($event)"
+    (close)="onSetupClose()"></app-setup-form>
+</div>

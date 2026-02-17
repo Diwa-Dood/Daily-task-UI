@@ -1,1 +1,82 @@
-/* You can add global styles to this file, and also import other style files */
+/* Enterprise Light Theme Styles */
+:root {
+  --bg-primary: #f9fafb;
+  --bg-secondary: #ffffff;
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --border-color: #e5e7eb;
+  --primary-color: #10a37f;
+  --primary-hover: #0e8466;
+  --ai-bubble-bg: #f3f4f6;
+  --user-bubble-bg: #064e3b;
+  /* Black Green */
+  --user-bubble-text: #ffffff;
+  --sidebar-active-bg: #dcfce7;
+  /* Light Green */
+  --sidebar-active-text: #064e3b;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  font-family: 'Inter', 'Poppins', sans-serif;
+  background: #f6f8fc;
+  color: var(--text-primary);
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Force all elements to inherit font */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+/* Form elements */
+input,
+textarea,
+button,
+select {
+  font-family: inherit;
+  font-size: 16px;
+  /* Prevents iOS zoom on focus */
+  color: inherit;
+}
+
+/* Remove ugly default styles */
+button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Input placeholders */
+::placeholder {
+  color: #9ca3af;
+  opacity: 1;
+}
+
+/* Improve focus */
+input:focus,
+textarea:focus,
+button:focus {
+  outline: none;
+}
+
+/* Smooth text */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Professional common utilities */
+.shadow-sm {
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.shadow-md {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}

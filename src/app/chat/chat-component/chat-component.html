@@ -1,0 +1,25 @@
+<div class="chat-shell">
+  <!-- Sidebar -->
+  <app-sidebar [class.open]="isSidebarOpen()" (click)="closeSidebar()">
+  </app-sidebar>
+
+  <!-- Overlay (mobile only) -->
+  <div class="overlay" *ngIf="isSidebarOpen()" (click)="closeSidebar()">
+  </div>
+
+  <!-- Main chat area -->
+  <div class="chat-container">
+
+    <!-- Header -->
+    <div class="chat-header">
+      <button class="menu-btn" (click)="openSidebar()">☰</button>
+      <div class="title-area">
+        <h1>AI Daily Work Log – Chat Assistant</h1>
+      </div>
+    </div>
+
+    <app-chat-window></app-chat-window>
+    <app-input-box></app-input-box>
+
+  </div>
+</div>

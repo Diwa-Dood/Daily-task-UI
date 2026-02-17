@@ -1,0 +1,85 @@
+<div class="modal-overlay" (click)="onClose()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>Daily Work Setup</h2>
+            <p class="subtitle">Please confirm your reporting leads and active projects.</p>
+        </div>
+
+        <div class="modal-body">
+            <!-- Lead 1 - Read Only -->
+            <div class="form-group">
+                <label>Lead 1</label>
+                <input type="text" [value]="lead1" readonly class="input-readonly" />
+            </div>
+
+            <!-- Lead 2 - Read Only -->
+            <div class="form-group">
+                <label>Lead 2</label>
+                <input type="text" [value]="lead2" readonly class="input-readonly" />
+            </div>
+
+            <!-- Project Selection -->
+            <div class="form-group">
+                <label>Active Projects <span class="required">*</span></label>
+
+                <!-- Dropdown Trigger -->
+                <div class="dropdown-trigger" (click)="toggleDropdown()" [class.open]="isDropdownOpen">
+                    <div class="selected-display">
+                        <span *ngIf="selectedCount === 0" class="placeholder">Select projects...</span>
+                        <span *ngIf="selectedCount > 0" class="selected-text">
+                            {{ selectedCount }} project{{ selectedCount > 1 ? 's' : '' }} selected
+                        </span>
+                    </div>
+                    <svg class="dropdown-icon" [class.rotated]="isDropdownOpen" width="20" height="20"
+                        viewBox="0 0 20 20" fill="none">
+                        <path d="M5 7.5L10 12.5L15 7.5" stroke="#6b7280" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                </div>
+
+                <!-- Dropdown Menu -->
+                <div class="dropdown-menu" *ngIf="isDropdownOpen" (click)="$event.stopPropagation()">
+                    <!-- Search Input -->
+                    <div class="search-box">
+                        <svg class="search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                            <path
+                                d="M7 12C9.76142 12 12 9.76142 12 7C12 4.23858 9.76142 2 7 2C4.23858 2 2 4.23858 2 7C2 9.76142 4.23858 12 7 12Z"
+                                stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                            <path d="M14 14L10.5 10.5" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                        <input type="text" class="search-input" placeholder="Search projects..." [value]="searchQuery"
+                            (input)="onSearchChange($event)" (click)="$event.stopPropagation()" />
+                    </div>
+
+                    <!-- Project List -->
+                    <div class="project-list">
+                        <div *ngFor="let project of filteredProjects" class="project-item"
+                            [class.selected]="project.selected" (click)="toggleProject(project)">
+                            <div class="checkbox">
+                                <svg *ngIf="project.selected" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                    <path d="M13.5 4L6 11.5L2.5 8" stroke="white" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            </div>
+                            <span class="project-name">{{ project.name }}</span>
+                        </div>
+
+                        <!-- No Results -->
+                        <div *ngIf="filteredProjects.length === 0" class="no-results">
+                            <p>No projects found</p>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="helper-text">Selected projects will be used for your daily work logs.</p>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button class="submit-btn" [disabled]="!hasSelectedProjects" (click)="onSubmit()">
+                Continue to Daily Work Log
+            </button>
+        </div>
+    </div>
+</div>

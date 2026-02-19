@@ -13,8 +13,8 @@ export class AuthService {
         private userService: UserService
     ) { }
 
-    login(email: string, password: string): Observable<LoginResponse> {
-        return this.http.post<LoginResponse>(`${API_BASE_URL}/login`, { email, password }).pipe(
+    login(email: string): Observable<LoginResponse> {
+        return this.http.post<LoginResponse>(`${API_BASE_URL}/login`, { email }).pipe(
             tap(user => this.userService.setUser(user))
         );
     }

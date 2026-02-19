@@ -17,7 +17,6 @@ import { ChangeDetectorRef } from '@angular/core';
 })
 export class LoginComponent implements OnInit {
   email = '';
-  password = '';
   showSetupForm = false;
   errorMessage = '';
   isLoading = false;
@@ -37,12 +36,12 @@ export class LoginComponent implements OnInit {
   }
 
   login() {
-    if (!this.email || !this.password) return;
+    if (!this.email) return;
 
     this.errorMessage = '';
     this.isLoading = true;
 
-    this.authService.login(this.email, this.password).subscribe({
+    this.authService.login(this.email).subscribe({
       next: (user) => {
         this.isLoading = false;
         console.log('Login successful', user);

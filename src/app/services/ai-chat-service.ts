@@ -1,8 +1,20 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject } from 'rxjs';
-import { ChatMessage } from '../model/chat.model';
+import { ChatMessage, Task } from '../model/chat.model';
 import { UserService } from './user-service';
 import { WorkLogService } from './work-log.service';
+import { API_BASE_URL } from '../app.constants';
+
+/** Raw response returned by POST /api/ai/structure-task */
+interface AiStructureResponse {
+  project_name?: string;
+  ticket?: string;
+  work_desc?: string;
+  status?: string;
+  work_hours?: string; // e.g. "2:30"
+  blocker?: string;
+}
 
 @Injectable({ providedIn: 'root' })
 export class ManagerAiService {
@@ -10,7 +22,11 @@ export class ManagerAiService {
   private messagesSubject = new BehaviorSubject<ChatMessage[]>([]);
   messages$ = this.messagesSubject.asObservable();
 
+  /** True while a POST /api/ai/structure-task request is in-flight. */
+  isProcessing = false;
+
   constructor(
+    private http: HttpClient,
     private userService: UserService,
     private workLogService: WorkLogService
   ) {
@@ -130,15 +146,68 @@ export class ManagerAiService {
       this.addMessage('ai', '⚠️ You have already checked out for today. Please come back tomorrow to log new tasks!');
       return;
     }
-    if (message) {
-      this.addMessage('user', message);
+    if (!message) return;
 
-      const user = this.userService.getUser();
-      const name = user?.name || 'there';
-      // Simulation: After user message, AI responds with the question + buttons
-      setTimeout(() => {
-        this.addMessage('ai', `Let me organize your tasks, ${name}. Please provide project, Jira, status, hours and blockers.`, true);
-      }, 800);
-    }
+    this.addMessage('user', message);
+    this.isProcessing = true;
+
+    // Call POST /api/ai/structure-task with the raw user text
+    this.http.post<AiStructureResponse>(`${API_BASE_URL}/ai/structure-task`, { raw_text: message })
+      .subscribe({
+        next: (res) => {
+          this.isProcessing = false;
+          const user = this.userService.getUser();
+          const name = user?.name || 'there';
+
+          // Parse work_hours from "H:MM" string (e.g. "2:30" → 2.5)
+          let hours = 0;
+          if (res.work_hours) {
+            const parts = res.work_hours.split(':').map(Number);
+            hours = (parts[0] || 0) + (parts[1] || 0) / 60;
+          }
+
+          // Map backend status string to frontend enum
+          const statusMap: Record<string, Task['status']> = {
+            'Done': 'Done',
+            'In Progress': 'In Progress',
+            'Blocked': 'Blocked',
+            'Planned': 'Planned'
+          };
+          const taskStatus: Task['status'] = statusMap[res.status ?? ''] ?? 'Planned';
+
+          const prefilledTask: Task = {
+            project: res.project_name || '',
+            jira: res.ticket || '',
+            description: res.work_desc || '',
+            status: taskStatus,
+            hours: Math.round(hours * 100) / 100,
+            h: Math.floor(hours),
+            m: Math.round((hours % 1) * 60),
+            blocker: res.blocker || ''
+          };
+
+          // Add a new AI message with the pre-filled task card
+          const newMsg: ChatMessage = {
+            type: 'ai',
+            text: `Got it, ${name}! I've structured your update. Review the task below and adjust before submitting.`,
+            timestamp: new Date(),
+            showButtons: true,
+            tasks: [prefilledTask]
+          };
+          this.messagesSubject.next([...this.messagesSubject.value, newMsg]);
+        },
+        error: (err) => {
+          this.isProcessing = false;
+          console.error('AI structuring failed, falling back to manual mode:', err);
+          const user = this.userService.getUser();
+          const name = user?.name || 'there';
+          // Graceful fallback: prompt user to fill in manually
+          this.addMessage(
+            'ai',
+            `Let me organize your tasks, ${name}. (AI assistant is unavailable — please fill in project, Jira, status, hours and blockers manually.)`,
+            true
+          );
+        }
+      });
   }
 }

@@ -28,8 +28,8 @@ export class DashboardService {
                     name: m.name,
                     avatar: m.name.split(' ').map((n: string) => n[0]).join('').toUpperCase(),
                     done: m.done,
-                    inProgress: 0, // Backend doesn't return per-member in-progress yet
-                    blocked: 0,    // Backend doesn't return per-member blocked yet
+                    inProgress: 0,
+                    blocked: 0,
                     hours: m.hours,
                     score: m.qualityScore,
                     status: m.status === 'Submitted' ? 'Active' : 'Low'
@@ -44,7 +44,7 @@ export class DashboardService {
                     inProgressTasks: response.inProgress,
                     blockedTasks: response.blocked,
                     totalHours: response.totalHours,
-                    productivityScore: response.compliance // Using compliance as productivity score for now
+                    productivityScore: response.compliance
                 };
                 this.statsSubject.next(kpiStats);
             })

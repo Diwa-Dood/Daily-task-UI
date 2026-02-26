@@ -138,6 +138,7 @@ export class ChatWindowComponent implements AfterViewInit, OnDestroy {
   }
 
   onEdit(msg: ChatMessage) {
+    console.log('Editing task:', msg);
     this.ai.editTask(msg);
   }
 

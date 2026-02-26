@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DashboardService } from '../../services/dashboard.service';
+import { ReportsService } from '../../services/reports.service';
 import { TeamMember, KpiStats } from '../../model/dashboard.model';
 import { SidebarComponent } from '../../chat/sidebar-component/sidebar-component';
 import { Observable } from 'rxjs';
@@ -26,7 +27,10 @@ export class DashboardComponent implements OnInit {
     selectedMember: TeamMember | null = null;
     showDrawer = false;
 
-    constructor(private dashboardService: DashboardService) {
+    constructor(
+        private dashboardService: DashboardService,
+        private reportsService: ReportsService
+    ) {
         this.members$ = this.dashboardService.members$;
     }
 
@@ -58,19 +62,10 @@ export class DashboardComponent implements OnInit {
     }
 
     exportToExcel() {
-        // Basic CSV export demo
-        let csv = 'Name,Done,In Progress,Blocked,Hours,Score\n';
-        this.dashboardService.members$.subscribe(members => {
-            members.forEach(m => {
-                csv += `${m.name},${m.done},${m.inProgress},${m.blocked},${m.hours},${m.score}\n`;
-            });
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'team_productivity_report.csv';
-            a.click();
-        });
+        // Compute date range: default to current date for a single-day report.
+        // When filters support week/month, pass the appropriate range here.
+        const today = new Date().toISOString().split('T')[0];
+        this.reportsService.exportExcel(today, today);
     }
 
     // Simplified chart data getters

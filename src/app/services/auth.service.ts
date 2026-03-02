@@ -19,12 +19,13 @@ export class AuthService {
         );
     }
 
-    assignProjects(userId: number, projects: string[]): Observable<any> {
+    assignProjects(userId: number, projects: number[]): Observable<any> {
         return this.http.post(`${API_BASE_URL}/assign-projects`, { userId, projects }).pipe(
             tap(() => {
                 const user = this.userService.getUser();
                 if (user) {
-                    this.userService.setUser({ ...user, projects });
+                    // Keep the existing user record; project IDs are managed by the backend
+                    this.userService.setUser({ ...user });
                 }
             })
         );

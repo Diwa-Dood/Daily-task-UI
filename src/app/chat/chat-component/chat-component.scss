@@ -31,20 +31,66 @@ app-sidebar {
 }
 
 .chat-header {
-  padding: 16px 24px;
+  padding: 12px 24px;
   border-bottom: 1px solid #eef2f7;
   background-color: #ffffff;
   display: flex;
   align-items: center;
   gap: 16px;
+  flex-wrap: wrap;
 
   .title-area h1 {
     margin: 0;
     font-size: 18px;
     font-weight: 600;
     color: #1a1a1a;
+    white-space: nowrap;
   }
 }
+
+/* Tab navigation ─────────────────────────────────────── */
+.view-tabs {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+  align-items: center;
+}
+
+.tab-btn {
+  padding: 6px 16px;
+  background: transparent;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #64748b;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+
+  &:hover {
+    background: #f1f5f9;
+    color: #334155;
+  }
+
+  &.active {
+    background: #6366f1;
+    border-color: #6366f1;
+    color: #ffffff;
+    font-weight: 600;
+  }
+}
+
+/* Panel view (Entry / Summary) ───────────────────────── */
+.panel-view {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  background: #f8fafc;
+  padding: 0;
+}
+
 
 .menu-btn {
   display: none;

@@ -2,7 +2,12 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, map, tap } from 'rxjs';
 import { TeamMember, KpiStats } from '../model/dashboard.model';
-import { API_BASE_URL } from '../app.constants';
+import { API_BASE_URL } from '../constants/app.constants';
+
+export interface Team {
+    id: string; // or number depending on backend, using string for flexible select options
+    name: string;
+}
 
 @Injectable({ providedIn: 'root' })
 export class DashboardService {
@@ -67,5 +72,9 @@ export class DashboardService {
 
     filterByLead(lead: string) {
         this.fetchDashboardData(lead).subscribe();
+    }
+
+    getTeams(): Observable<Team[]> {
+        return this.http.get<Team[]>(`${API_BASE_URL}/teams`);
     }
 }

@@ -14,117 +14,35 @@
       <div class="bubble">
         <span class="text" [innerHTML]="msg.text"></span>
 
-        <!-- Quick Action Buttons -->
+        <!-- Quick Action Buttons (only for AI greeting message, before tasks are added) -->
         <div class="actions-wrapper" *ngIf="msg.showButtons && !msg.isCheckedOut" style="display: block !important;">
           <div class="button-row">
-            <!-- Filtered Jira Buttons -->
-            <button *ngFor="let jira of getAvailableJiraButtons(msg)" class="pill blue"
-              (click)="onJiraClick(msg, jira)">
-              {{jira}}
-            </button>
-            <button class="pill gray" (click)="onMeetingClick(msg)">Meeting</button>
-            <button class="pill gray" (click)="onClientCallClick(msg)">Client Call</button>
-            <button class="pill green" (click)="onAddNewTaskClick(msg)">+ Add New Task</button>
+            <button class="pill gray" (click)="onMeetingClick()">Meeting</button>
+            <button class="pill gray" (click)="onClientCallClick()">Client Call</button>
+            <button class="pill green" (click)="onAddNewTaskClick()">+ Add New Task</button>
           </div>
         </div>
 
-        <!-- Checkout Button in AI message -->
-        <div class="checkout-wrapper"
-          *ngIf="msg.type === 'ai' && msg.text.includes('Daily log submitted') && !msg.isCheckedOut">
-          <button class="checkout-btn" (click)="onCheckout()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-              <polyline points="22 4 12 14.01 9 11.01"></polyline>
-            </svg>
-            Checkout for Today
-          </button>
-        </div>
-
-        <!-- Multi-Task Panel -->
-        <div class="task-panel" *ngIf="msg.tasks && msg.tasks.length > 0">
-          <div class="task-list-header">
-            <h3>Daily Draft ({{msg.tasks.length}})</h3>
-          </div>
-
-          <div class="task-draft-row shadow-sm" *ngFor="let task of msg.tasks; let i = index">
-            <div class="task-header-row">
-              <span class="task-index">#{{i + 1}}</span>
-              <span class="task-type-badge">{{task.type || task.jira || 'Standard'}}</span>
-              <button class="del-btn" *ngIf="!msg.isSubmitted && !msg.isCheckedOut" (click)="onDeleteTask(msg, i)"
-                title="Delete task">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
+        <!-- Submitted tasks summary in chat — rendered from real task data -->
+        <ng-container *ngIf="msg.tasks && msg.tasks.length > 0">
+          <div class="task-submitted-summary">
+            <div class="task-list-header">
+              <h3>Logged Tasks ({{ msg.tasks.length }})</h3>
+            </div>
+            <div class="task-summary-row" *ngFor="let task of msg.tasks; let i = index">
+              <span class="task-index">#{{ i + 1 }}</span>
+              <span class="task-type-badge">{{ task.type || 'Task' }}</span>
+              <span class="task-desc">{{ task.description }}</span>
+              <span class="task-time" *ngIf="task.hours">
+                {{ task.hours | timeFormat }}
+              </span>
+              <button class="edit-task-btn" title="Edit this task" (click)="onEditTask(msg, task, i)">
+                ✏️ Edit
               </button>
             </div>
-
-            <div class="form-grid">
-              <div class="form-group">
-                <label>Project</label>
-                <select [(ngModel)]="task.project" [disabled]="!!msg.isSubmitted || !!msg.isCheckedOut">
-                  <option value="" disabled>Select Project</option>
-                  <option *ngFor="let p of userProjects" [value]="p">{{p}}</option>
-                </select>
-              </div>
-              <div class="form-group"
-                *ngIf="task.jira !== undefined && task.type !== 'Meeting' && task.type !== 'Client Call'">
-                <label>Jira</label>
-                <input type="text" [(ngModel)]="task.jira" placeholder="CLM-XXX"
-                  [disabled]="!!msg.isSubmitted || !!msg.isCheckedOut">
-              </div>
-              <div class="form-group full-width">
-                <label>Description</label>
-                <input type="text" [(ngModel)]="task.description" placeholder="What did you do?"
-                  [disabled]="!!msg.isSubmitted || !!msg.isCheckedOut">
-              </div>
-              <div class="form-group">
-                <label>Status</label>
-                <select [(ngModel)]="task.status" [disabled]="!!msg.isSubmitted || !!msg.isCheckedOut">
-                  <option value="Planned">Planned</option>
-                  <option value="In Progress">In Progress</option>
-                  <option value="Done">Done</option>
-                  <option value="Blocked">Blocked</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>Time Spent</label>
-                <div class="time-input-group">
-                  <div class="time-field">
-                    <input type="number" [(ngModel)]="task.h" (ngModelChange)="syncHours(task)" placeholder="Hrs"
-                      min="0" [disabled]="!!msg.isSubmitted || !!msg.isCheckedOut">
-                    <span>h</span>
-                  </div>
-                  <div class="time-field">
-                    <input type="number" [(ngModel)]="task.m" (ngModelChange)="syncHours(task)" placeholder="Min"
-                      min="0" max="59" [disabled]="!!msg.isSubmitted || !!msg.isCheckedOut">
-                    <span>m</span>
-                  </div>
-                </div>
-              </div>
-              <div class="form-group full-width">
-                <label>Blocker</label>
-                <input type="text" [(ngModel)]="task.blocker" placeholder="None"
-                  [disabled]="!!msg.isSubmitted || !!msg.isCheckedOut">
-              </div>
-            </div>
           </div>
+        </ng-container>
 
-          <button class="submit-btn" *ngIf="!msg.isSubmitted && !msg.isCheckedOut" (click)="onSubmit(msg)">Submit All
-            Tasks</button>
-          <button class="submit-btn" *ngIf="msg.isSubmitted && !msg.isCheckedOut" (click)="onEdit(msg)">Edit
-            Plan</button>
-          <div class="finalized-badge" *ngIf="msg.isCheckedOut">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path>
-              <path d="m9 12 2 2 4-4"></path>
-            </svg>
-            Log Finalized
-          </div>
-        </div>
       </div>
     </div>
     <div class="timestamp" *ngIf="msg.timestamp">

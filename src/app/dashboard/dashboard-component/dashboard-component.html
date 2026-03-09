@@ -10,18 +10,12 @@
             <div class="controls">
                 <div class="select-wrapper">
                     <select [(ngModel)]="selectedLead" (change)="onLeadChange()">
-                        <option>All Teams</option>
-                        <option>Lead 1 Team</option>
-                        <option>Lead 2 Team</option>
+                        <option *ngFor="let team of teams" [value]="team.name">{{team.name}}</option>
                     </select>
                 </div>
                 <div class="select-wrapper">
                     <select [(ngModel)]="selectedDate">
-                        <option>Today</option>
-                        <option>Yesterday</option>
-                        <option>This Week</option>
-                        <option>This Month</option>
-                        <option>Custom Range</option>
+                        <option *ngFor="let filter of dateFilters" [value]="filter">{{filter}}</option>
                     </select>
                 </div>
                 <button class="export-btn" (click)="exportToExcel()">
@@ -59,7 +53,8 @@
                     <div class="alert-info">
                         <h4>Critical Performance Alert</h4>
                         <p><strong>{{worstPerformer.name}}</strong> has a productivity score of
-                            <strong>{{worstPerformer.score}}%</strong>. High blockers or low task volume detected.</p>
+                            <strong>{{worstPerformer.score}}%</strong>. {{ aiObservation }}
+                        </p>
                     </div>
                     <button class="alert-btn" (click)="openMemberDetails(worstPerformer)">Fix Issues</button>
                 </div>
@@ -89,7 +84,7 @@
                 </div>
                 <div class="kpi-card">
                     <span class="label">Hours Logged</span>
-                    <span class="value">{{kpis.totalHours}}h</span>
+                    <span class="value">{{kpis.totalHours | timeFormat }}</span>
                     <div class="icon-bg gray">⏱️</div>
                 </div>
                 <div class="kpi-card">
@@ -109,7 +104,7 @@
                             <div class="bar-container">
                                 <div class="bar" [style.width.%]="(m.hours/45)*100"></div>
                             </div>
-                            <span class="val">{{m.hours}}h</span>
+                            <span class="val">{{m.hours | timeFormat }}</span>
                         </div>
                     </div>
                 </div>
@@ -187,7 +182,7 @@
                                 <td>{{m.done}}</td>
                                 <td>{{m.inProgress}}</td>
                                 <td>{{m.blocked}}</td>
-                                <td>{{m.hours}}h</td>
+                                <td>{{m.hours | timeFormat }}</td>
                                 <td>
                                     <div class="score-bar">
                                         <div class="fill" [style.width.%]="m.score" [class.low]="m.score < 80"></div>
@@ -219,12 +214,12 @@
                 <div class="profile-summary">
                     <div class="avatar-lg">{{selectedMember.avatar}}</div>
                     <h4>{{selectedMember.name}}</h4>
-                    <span class="role">Software Engineer</span>
+                    <span class="role">{{ userRole }}</span>
                 </div>
 
                 <div class="stats-grid">
                     <div class="stat">
-                        <span class="val">{{selectedMember.hours}}h</span>
+                        <span class="val">{{selectedMember.hours | timeFormat }}</span>
                         <span class="lab">Total Hours</span>
                     </div>
                     <div class="stat">
@@ -256,7 +251,7 @@
                                 <tr *ngFor="let t of selectedMember.tasks || []">
                                     <td>{{t.jira}}</td>
                                     <td><span class="badge">{{t.status}}</span></td>
-                                    <td>{{t.hours}}h</td>
+                                    <td>{{t.hours | timeFormat }}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -273,9 +268,7 @@
                         </svg>
                         AI Insight
                     </div>
-                    <p>{{selectedMember.name}} has {{selectedMember.done}} completed tasks and
-                        {{selectedMember.inProgress}} in
-                        progress. One blocker needs attention.</p>
+                    <p>{{ selectedMember.aiInsight || 'Loading AI insight...' }}</p>
                 </div>
             </div>
         </div>

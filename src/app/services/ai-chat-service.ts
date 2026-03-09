@@ -4,6 +4,7 @@ import { BehaviorSubject } from 'rxjs';
 import { ChatMessage, Task } from '../model/chat.model';
 import { UserService } from './user-service';
 import { WorkLogService } from './work-log.service';
+import { SummaryEntry } from '../model/task-entry.model';
 import { API_BASE_URL } from '../app.constants';
 
 /** Raw response returned by POST /api/ai/structure-task */
@@ -56,6 +57,44 @@ export class ManagerAiService {
       ...this.messagesSubject.value,
       { type, text, timestamp: new Date(), showButtons, tasks: [] }
     ]);
+  }
+
+  /**
+   * Called by ChatComponent after a Log Entry form submission.
+   * Appends a chat message containing the real task card (type, description, hours)
+   * so it appears in the Chat view with actual data instead of placeholders.
+   */
+  notifyEntrySubmitted(entry: SummaryEntry): void {
+    const user = this.userService.getUser();
+    const name = user?.name || 'there';
+
+    // Convert decimal logTime (e.g. 1.5) into hours + minutes for display
+    const totalMinutes = Math.round(entry.logTime * 60);
+    const h = Math.floor(totalMinutes / 60);
+    const m = totalMinutes % 60;
+
+    // Build a real Task card from the SummaryEntry data
+    const task: Task = {
+      taskId: entry.taskId,   // carry the DB PK so edits can PATCH the correct row
+      project: entry.projectName || '',
+      jira: '',
+      description: entry.description,
+      status: 'Done',
+      hours: entry.logTime,
+      h,
+      m,
+      blocker: entry.blocker || '',
+      type: entry.type
+    };
+
+    const msg: ChatMessage = {
+      type: 'ai',
+      text: `✅ Entry logged, ${name}! Here's what was recorded:`,
+      timestamp: new Date(),
+      showButtons: false,
+      tasks: [task]
+    };
+    this.messagesSubject.next([...this.messagesSubject.value, msg]);
   }
 
   addTaskToDraft(msg: ChatMessage, task: any) {
@@ -127,6 +166,26 @@ export class ManagerAiService {
       };
       this.messagesSubject.next(updatedMessages);
     }
+  }
+
+  /**
+   * Updates a single task inside a specific ChatMessage in place.
+   * Called by ChatComponent after the user submits an edited task via TaskEntryComponent.
+   *
+   * @param msgIndex  Index of the ChatMessage in the messages array.
+   * @param taskIndex Index of the Task within msg.tasks[].
+   * @param patch     Partial Task fields to overwrite — only provided fields are changed.
+   */
+  updateTask(msgIndex: number, taskIndex: number, patch: Partial<Task>): void {
+    const messages = [...this.messagesSubject.value];
+    const msg = messages[msgIndex];
+    if (!msg || !msg.tasks || taskIndex >= msg.tasks.length) return;
+
+    const updatedTasks = [...msg.tasks];
+    updatedTasks[taskIndex] = { ...updatedTasks[taskIndex], ...patch };
+
+    messages[msgIndex] = { ...msg, tasks: updatedTasks };
+    this.messagesSubject.next(messages);
   }
 
   checkout() {

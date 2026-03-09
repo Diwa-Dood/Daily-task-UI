@@ -9,6 +9,7 @@ export interface TeamMember {
     score: number;
     status: 'Active' | 'Low' | 'Blocked';
     tasks?: TaskLog[];
+    aiInsight?: string;
 }
 
 export interface TaskLog {

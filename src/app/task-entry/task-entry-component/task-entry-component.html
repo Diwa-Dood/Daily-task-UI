@@ -1,0 +1,148 @@
+<div class="entry-page">
+    <div class="entry-card">
+
+        <!-- Header — changes title based on edit vs create mode -->
+        <div class="entry-header">
+            <div class="header-icon">{{ isEditMode ? '✏️' : '📋' }}</div>
+            <h1>{{ isEditMode ? 'Edit Task' : 'Log Work Entry' }}</h1>
+            <p class="subtitle" *ngIf="!isEditMode">Record your time for today's tasks, meetings, or client calls.</p>
+            <p class="subtitle" *ngIf="isEditMode">Update the details below and click <strong>Update Entry</strong> to
+                save.</p>
+        </div>
+
+        <div class="entry-body">
+
+            <!-- Projects loading error -->
+            <div *ngIf="projectsError" class="alert alert-error">
+                ⚠️ {{ projectsError }}
+            </div>
+
+            <!-- Submission error -->
+            <div *ngIf="submitError" class="alert alert-error">
+                ⚠️ {{ submitError }}
+            </div>
+
+            <!-- ── Entry Type ─────────────────────────── -->
+            <div class="form-group">
+                <label for="entryType">Entry Type <span class="required">*</span></label>
+                <div class="select-wrapper">
+                    <select id="entryType" [(ngModel)]="selectedType" (ngModelChange)="onTypeChange()">
+                        <option *ngFor="let t of entryTypes" [value]="t">{{ t }}</option>
+                    </select>
+                    <span class="select-arrow">▾</span>
+                </div>
+                <p class="field-hint">
+                    <ng-container [ngSwitch]="selectedType">
+                        <span *ngSwitchCase="'Task'">Project required for tasks.</span>
+                        <span *ngSwitchCase="'Meeting'">No project needed for meetings.</span>
+                        <span *ngSwitchCase="'Client Call'">Project required for client calls.</span>
+                    </ng-container>
+                </p>
+            </div>
+
+            <!-- ── Project (hidden for Meeting) — Searchable Dropdown ── -->
+            <div class="form-group" *ngIf="showProject">
+                <label for="projectSearchInput">Project <span class="required">*</span></label>
+
+                <div class="searchable-select" [class.loading]="isLoadingProjects">
+
+                    <!-- Search input -->
+                    <div class="search-input-wrapper" [class.open]="showDropdown">
+                        <input id="projectSearchInput" type="text" class="project-search-input"
+                            [placeholder]="isLoadingProjects ? 'Loading projects…' : (selectedProjectId ? selectedProjectName : 'Search or select a project…')"
+                            [(ngModel)]="projectSearch" [disabled]="isLoadingProjects" (focus)="openDropdown()"
+                            (blur)="closeDropdown()" autocomplete="off" />
+                        <!-- Clear button (shown when a project is selected) -->
+                        <button *ngIf="selectedProjectId && !isLoadingProjects" class="clear-btn" type="button"
+                            (mousedown)="clearProject()" title="Clear selection">✕</button>
+                        <span class="select-arrow" [class.rotated]="showDropdown">▾</span>
+                    </div>
+
+                    <!-- Dropdown panel -->
+                    <div class="dropdown-panel" *ngIf="showDropdown && !isLoadingProjects">
+
+                        <!-- No results -->
+                        <div class="dropdown-empty" *ngIf="filteredProjects.length === 0">
+                            No projects match "{{ projectSearch }}"
+                        </div>
+
+                        <!-- Options list -->
+                        <div *ngFor="let p of filteredProjects" class="dropdown-option"
+                            [class.selected]="p.projectId === selectedProjectId" (mousedown)="selectProject(p)">
+                            {{ p.projectName }}
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Validation hint -->
+                <span class="field-hint" *ngIf="!selectedProjectId && !showDropdown"
+                    style="color: #94a3b8; font-size:0.78rem;">
+                    Required — type to search from {{ projects.length }} project(s)
+                </span>
+            </div>
+
+            <!-- ── Description ───────────────────────── -->
+            <div class="form-group">
+                <label for="description">Description <span class="required">*</span></label>
+                <textarea id="description" [(ngModel)]="description" rows="3" placeholder="Describe the work done…"
+                    maxlength="500"></textarea>
+                <span class="char-count">{{ description.length }} / 500</span>
+            </div>
+
+            <!-- ── Blocker (optional — always visible) ──────────────────── -->
+            <div class="form-group">
+                <label for="blocker">Blocker <span class="field-hint" style="font-weight:400;">(optional)</span></label>
+                <textarea id="blocker" [(ngModel)]="blocker" rows="2"
+                    placeholder="Describe any issue preventing progress (optional)" maxlength="300"></textarea>
+                <span class="char-count">{{ blocker.length }} / 300</span>
+            </div>
+
+            <!-- ── Log Time (Hours + Minutes) ──────────── -->
+            <div class="form-group">
+                <label>Log Time <span class="required">*</span></label>
+                <div class="time-input-row">
+                    <div class="time-input-group">
+                        <input id="logHours" type="number" [(ngModel)]="logHours" min="0" step="1" placeholder="0"
+                            [class.invalid]="(logHours ?? 0) < 0" />
+                        <span class="time-unit">H</span>
+                    </div>
+                    <div class="time-input-group">
+                        <input id="logMinutes" type="number" [(ngModel)]="logMinutes" min="0" max="59" step="1"
+                            placeholder="0" [class.invalid]="(logMinutes ?? 0) < 0 || (logMinutes ?? 0) > 59" />
+                        <span class="time-unit">M</span>
+                    </div>
+                </div>
+                <span class="field-hint" *ngIf="(logMinutes ?? 0) < 0 || (logMinutes ?? 0) > 59" style="color:#ef4444;">
+                    Minutes must be between 0 and 59.
+                </span>
+                <span class="field-hint" *ngIf="(logMinutes ?? 0) >= 0 && (logMinutes ?? 0) <= 59 && decimalHours <= 0"
+                    style="color:#ef4444;">
+                    Total log time must be greater than 0.
+                </span>
+            </div>
+
+            <!-- ── Status (edit mode only) ───────────────────────────── -->
+            <div class="form-group" *ngIf="isEditMode">
+                <label for="statusField">Status</label>
+                <div class="select-wrapper">
+                    <select id="statusField" [(ngModel)]="status">
+                        <option *ngFor="let s of statusOptions" [value]="s">{{ s }}</option>
+                    </select>
+                    <span class="select-arrow">▾</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Footer -->
+        <div class="entry-footer">
+            <button class="submit-btn" [disabled]="!isFormValid || isSubmitting" (click)="onSubmit()">
+                <span *ngIf="!isSubmitting">{{ isEditMode ? 'Update Entry' : 'Submit Entry' }}</span>
+                <span *ngIf="isSubmitting" class="spinner-inline"></span>
+                <span *ngIf="isSubmitting">Saving…</span>
+            </button>
+        </div>
+
+    </div>
+</div>

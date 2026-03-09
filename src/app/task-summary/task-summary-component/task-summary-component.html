@@ -1,0 +1,113 @@
+<div class="summary-page">
+    <div class="summary-card">
+
+        <!-- Header -->
+        <div class="summary-header">
+            <div class="header-icon">✅</div>
+            <h1>Today's Work Summary</h1>
+            <p class="subtitle">Your logged hours for today's session.</p>
+        </div>
+
+        <!-- Loading State -->
+        <div *ngIf="isLoading" class="loading-state">
+            <div class="spinner"></div>
+            <p>Loading your summary…</p>
+        </div>
+
+        <!-- Error State -->
+        <div *ngIf="!isLoading && errorMessage" class="alert alert-error">
+            ⚠️ {{ errorMessage }}
+        </div>
+
+        <!-- Summary Content -->
+        <ng-container *ngIf="!isLoading && !errorMessage && summary">
+
+            <!-- ── Hours Cards ────────────────────────── -->
+            <div class="cards-grid">
+                <div class="stat-card total">
+                    <div class="stat-value">{{ summary.totalHours | timeFormat }}</div>
+                    <div class="stat-label">Total Hours</div>
+                </div>
+                <div class="stat-card task">
+                    <div class="stat-value">{{ summary.taskHours | timeFormat }}</div>
+                    <div class="stat-label">Task Hours</div>
+                </div>
+                <div class="stat-card meeting">
+                    <div class="stat-value">{{ summary.meetingHours | timeFormat }}</div>
+                    <div class="stat-label">Meeting Hours</div>
+                </div>
+                <div class="stat-card client-call">
+                    <div class="stat-value">{{ summary.clientCallHours | timeFormat }}
+                    </div>
+                    <div class="stat-label">Client Call Hours</div>
+                </div>
+            </div>
+
+            <!-- ── Entries List ───────────────────────── -->
+            <div class="entries-section">
+                <h2 class="entries-title">Logged Entries</h2>
+
+                <!-- Empty state -->
+                <div *ngIf="displayEntries.length === 0" class="empty-state">
+                    <p>No entries found for today.</p>
+                </div>
+
+                <!-- Entry rows -->
+                <div class="entry-list" *ngIf="displayEntries.length > 0">
+                    <div class="entry-row" *ngFor="let e of displayEntries; let i = index">
+
+                        <!-- Top row: badge + description + hours -->
+                        <div class="entry-top">
+                            <div class="entry-left">
+                                <span class="badge" [ngClass]="badgeClass(e.type)">{{ e.type }}</span>
+                                <div class="entry-details">
+                                    <p class="entry-desc">{{ e.description }}</p>
+                                    <p class="entry-project" *ngIf="e.projectName">📁 {{ e.projectName }}</p>
+                                </div>
+                            </div>
+                            <div class="entry-hours">{{ e.logTime | timeFormat }}</div>
+                        </div>
+
+                        <!-- AI Insight panel (visible only when validation has resolved) -->
+                        <div class="ai-insight" *ngIf="e.aiQuality"
+                            [ngClass]="'ai-insight--' + qualityClass(e.aiQuality)">
+                            <div class="ai-insight__header">
+                                <span class="ai-insight__icon">✦</span>
+                                <span class="ai-insight__label">AI Insight</span>
+                                <span class="ai-quality-badge"
+                                    [ngClass]="'ai-quality-badge--' + qualityClass(e.aiQuality)">
+                                    {{ e.aiQuality }}
+                                </span>
+                            </div>
+
+                            <!-- Summary sentence -->
+                            <p class="ai-insight__summary" *ngIf="e.aiSummary">{{ e.aiSummary }}</p>
+
+                            <!-- Issues -->
+                            <ul class="ai-insight__list ai-insight__list--issues"
+                                *ngIf="e.aiIssues && e.aiIssues.length">
+                                <li *ngFor="let issue of e.aiIssues">⚠ {{ issue }}</li>
+                            </ul>
+
+                            <!-- Suggestions -->
+                            <ul class="ai-insight__list ai-insight__list--suggestions"
+                                *ngIf="e.aiSuggestions && e.aiSuggestions.length">
+                                <li *ngFor="let s of e.aiSuggestions">✔ {{ s }}</li>
+                            </ul>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </ng-container>
+
+        <!-- Footer -->
+        <div class="summary-footer">
+            <button class="add-btn" (click)="onAddAnother()">
+                + Add Another Entry
+            </button>
+        </div>
+
+    </div>
+</div>

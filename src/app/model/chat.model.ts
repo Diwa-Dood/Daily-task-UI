@@ -9,6 +9,7 @@ export interface ChatMessage {
 }
 
 export interface Task {
+  taskId?: number;  // DB primary key (DetailTask_ID) — populated after creation or load from backend
   project: string;
   jira: string;
   description: string;

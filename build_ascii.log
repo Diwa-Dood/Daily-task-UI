@@ -1,0 +1,77 @@
+[33m❯[39m Building...
+[32m✔[39m Building...
+[1mInitial chunk files[22m[2m | [22m[1mNames[22m        [2m | [22m [1mRaw size[22m[2m | [22m[1mEstimated transfer size[22m
+[32mmain-K5ZL65IQ.js[39m   [2m | [22m[2mmain[22m         [2m | [22m[36m448.19 kB[39m[2m | [22m              [36m104.16 kB[39m
+[32mstyles-2QSGETSF.css[39m[2m | [22m[2mstyles[22m       [2m | [22m[36m966 bytes[39m[2m | [22m              [36m966 bytes[39m
+
+[1m [22m                  [2m | [22m[1mInitial total[22m[2m | [22m[1m449.15 kB[22m[2m | [22m              [1m105.13 kB[22m
+
+Application bundle generation failed. [6.970 seconds] - 2026-03-09T09:56:38.642Z
+
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: LoginComponent is not used within the template of AppComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/app.ts:9:25:
+[37m      9 │   imports: [RouterOutlet,[32mLoginComponent[37m],
+        ╵                          [32m~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8102: The left side of this nullish coalescing operation does not include 'null' or 'undefined' in its type, therefore the '??' operator can be safely removed.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/task-entry/task-entry-component/task-entry-component.html:107:46:
+[37m      107 │                             [class.invalid]="([32mlogHours ?? 0[37m) < 0" />
+          ╵                                               [32m~~~~~~~~~~~~~[0m
+
+  Warning occurs in the template of component TaskEntryComponent.
+
+    src/app/task-entry/task-entry-component/task-entry-component.ts:24:17:
+[37m      24 │     templateUrl: [32m'./task-entry-component.html'[37m,
+         ╵                  [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8102: The left side of this nullish coalescing operation does not include 'null' or 'undefined' in its type, therefore the '??' operator can be safely removed.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/task-entry/task-entry-component/task-entry-component.html:112:62:
+[37m      112 │ ...r="0" [class.invalid]="([32mlogMinutes ?? 0[37m) < 0 || (logMinutes ??...
+          ╵                            [32m~~~~~~~~~~~~~~~[0m
+
+  Warning occurs in the template of component TaskEntryComponent.
+
+    src/app/task-entry/task-entry-component/task-entry-component.ts:24:17:
+[37m      24 │     templateUrl: [32m'./task-entry-component.html'[37m,
+         ╵                  [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8102: The left side of this nullish coalescing operation does not include 'null' or 'undefined' in its type, therefore the '??' operator can be safely removed.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/task-entry/task-entry-component/task-entry-component.html:112:87:
+[37m      112 │ ...ass.invalid]="(logMinutes ?? 0) < 0 || ([32mlogMinutes ?? 0[37m) > 59" />
+          ╵                                            [32m~~~~~~~~~~~~~~~[0m
+
+  Warning occurs in the template of component TaskEntryComponent.
+
+    src/app/task-entry/task-entry-component/task-entry-component.ts:24:17:
+[37m      24 │     templateUrl: [32m'./task-entry-component.html'[37m,
+         ╵                  [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1msrc/app/dashboard/dashboard-component/dashboard-component.scss exceeded maximum budget. Budget 4.00 kB was not met by 4.52 kB with a total of 8.52 kB.[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1msrc/app/setup/setup-form/setup-form.component.scss exceeded maximum budget. Budget 4.00 kB was not met by 1.02 kB with a total of 5.02 kB.[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mcss-inline-fonts:https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap exceeded maximum budget. Budget 4.00 kB was not met by 12.49 kB with a total of 16.50 kB.[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mcss-inline-fonts:https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap exceeded maximum budget. Budget 4.00 kB was not met by 12.91 kB with a total of 16.91 kB.[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1msrc/app/dashboard/dashboard-component/dashboard-component.scss exceeded maximum budget. Budget 8.00 kB was not met by 523 bytes with a total of 8.52 kB.[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mcss-inline-fonts:https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap exceeded maximum budget. Budget 8.00 kB was not met by 8.49 kB with a total of 16.50 kB.[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mcss-inline-fonts:https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap exceeded maximum budget. Budget 8.00 kB was not met by 8.91 kB with a total of 16.91 kB.[0m
+
+[39m[22m

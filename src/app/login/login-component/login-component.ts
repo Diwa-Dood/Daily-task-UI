@@ -64,7 +64,7 @@ export class LoginComponent implements OnInit {
     });
   }
 
-  onSetupComplete(selectedProjects: string[]) {
+  onSetupComplete(selectedProjects: number[]) {
     console.log('Setup complete, closing form');
     this.showSetupForm = false;
     this.router.navigate(['/chat']);

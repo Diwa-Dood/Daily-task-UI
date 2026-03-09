@@ -1,4 +1,5 @@
 <div class="chat-shell">
+
   <!-- Sidebar -->
   <app-sidebar [class.open]="isSidebarOpen()" (click)="closeSidebar()">
   </app-sidebar>
@@ -7,19 +8,57 @@
   <div class="overlay" *ngIf="isSidebarOpen()" (click)="closeSidebar()">
   </div>
 
-  <!-- Main chat area -->
+  <!-- Main area -->
   <div class="chat-container">
 
-    <!-- Header -->
+    <!-- Header with tab navigation -->
     <div class="chat-header">
       <button class="menu-btn" (click)="openSidebar()">☰</button>
+
       <div class="title-area">
-        <h1>AI Daily Work Log – Chat Assistant</h1>
+        <h1>AI Daily Work Log</h1>
       </div>
+
+      <!-- Tab switcher -->
+      <nav class="view-tabs" role="tablist">
+        <button role="tab" class="tab-btn" [class.active]="currentView === 'chat'" (click)="showChat()"
+          aria-label="Chat Assistant">
+          💬 Chat
+        </button>
+        <button role="tab" class="tab-btn" [class.active]="currentView === 'entry'" (click)="showEntry()"
+          aria-label="Log Work Entry">
+          ➕ Log Entry
+        </button>
+        <button role="tab" class="tab-btn" [class.active]="currentView === 'summary'" (click)="showSummary()"
+          aria-label="Today's Summary">
+          📊 Summary
+        </button>
+      </nav>
     </div>
 
-    <app-chat-window></app-chat-window>
-    <app-input-box></app-input-box>
+    <!-- ── View: AI Chat (default) ───────────────────────────── -->
+    <ng-container *ngIf="currentView === 'chat'">
+      <app-chat-window (addNewTaskRequested)="onAddNewTaskFromChat()" (meetingRequested)="onMeetingFromChat($event)"
+        (clientCallRequested)="onClientCallFromChat($event)" (editTaskRequested)="onEditTaskFromChat($event)">
+      </app-chat-window>
+      <app-input-box></app-input-box>
+    </ng-container>
+
+    <!-- ── View: Task Entry Form ─────────────────────────────── -->
+    <div class="panel-view" *ngIf="currentView === 'entry'">
+      <!-- Draft list of already-submitted session entries -->
+      <app-draft-list [entries]="sessionEntries"></app-draft-list>
+
+      <!-- Task entry form — presetEntryType selects type; taskToEdit pre-fills all fields for editing -->
+      <app-task-entry [presetEntryType]="presetEntryType" [taskToEdit]="taskToEdit"
+        (submitted)="onEntrySubmitted($event)">
+      </app-task-entry>
+    </div>
+
+    <!-- ── View: Work Summary ────────────────────────────────── -->
+    <div class="panel-view" *ngIf="currentView === 'summary'">
+      <app-task-summary (addAnother)="onAddAnother()" [enrichedEntries]="sessionEntries"></app-task-summary>
+    </div>
 
   </div>
 </div>

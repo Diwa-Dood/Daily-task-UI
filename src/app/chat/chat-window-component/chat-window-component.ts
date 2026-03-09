@@ -1,21 +1,23 @@
 import {
   Component,
   ElementRef,
+  EventEmitter,
+  Output,
   ViewChild,
   AfterViewInit,
   OnDestroy
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { ManagerAiService } from '../../services/ai-chat-service';
-import { UserService } from '../../services/user-service';
 import { Observable, Subscription } from 'rxjs';
 import { ChatMessage, Task } from '../../model/chat.model';
+import { EntryType, EditableTask } from '../../model/task-entry.model';
+import { TimeFormatPipe } from '../../shared/pipes/time-format.pipe';
 
 @Component({
   standalone: true,
   selector: 'app-chat-window',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, TimeFormatPipe],
   templateUrl: './chat-window-component.html',
   styleUrls: ['./chat-window-component.scss']
 })
@@ -26,18 +28,32 @@ export class ChatWindowComponent implements AfterViewInit, OnDestroy {
 
   @ViewChild('scroll') scroll!: ElementRef<HTMLDivElement>;
 
-  jiraButtons = ['CLM-101', 'CLM-102', 'CLM-103', 'CLM-104', 'CLM-105', 'CLM-106', 'CLM-107'];
+  /**
+   * Emitted when the user clicks "+ Add New Task".
+   * The parent (ChatComponent) listens and switches to the Log Entry view.
+   */
+  @Output() addNewTaskRequested = new EventEmitter<void>();
 
-  constructor(
-    private ai: ManagerAiService,
-    private userService: UserService
-  ) {
+  /**
+   * Emitted when the user clicks "Meeting".
+   * Parent switches to Log Entry view with entryType pre-set to 'Meeting'.
+   */
+  @Output() meetingRequested = new EventEmitter<EntryType>();
+
+  /**
+   * Emitted when the user clicks "Client Call".
+   * Parent switches to Log Entry view with entryType pre-set to 'Client Call'.
+   */
+  @Output() clientCallRequested = new EventEmitter<EntryType>();
+
+  /**
+   * Emitted when the user clicks ✏️ Edit on a logged task card.
+   * Carries the task data + position indices for pre-filling the form and updating in place.
+   */
+  @Output() editTaskRequested = new EventEmitter<EditableTask>();
+
+  constructor(private ai: ManagerAiService) {
     this.messages$ = this.ai.messages$;
-  }
-
-  get userProjects(): string[] {
-    const user = this.userService.getUser();
-    return (user?.projects && user.projects.length > 0) ? user.projects : ['Internal', 'Claims Portal', 'Common'];
   }
 
   ngAfterViewInit() {
@@ -51,98 +67,53 @@ export class ChatWindowComponent implements AfterViewInit, OnDestroy {
     });
   }
 
-  getAvailableJiraButtons(msg: ChatMessage) {
-    let allUsedJiras: string[] = [];
-
-    // Get all messages current value
-    const messages: ChatMessage[] = this.ai.getMessagesSync();
-
-    messages.forEach((m: ChatMessage) => {
-      if (m.tasks) {
-        m.tasks.forEach((t: Task) => {
-          if (t.jira) allUsedJiras.push(t.jira);
-        });
-      }
-    });
-
-    return this.jiraButtons.filter(jira => !allUsedJiras.includes(jira));
+  /** Emits meetingRequested so ChatComponent opens Log Entry pre-set to Meeting. */
+  onMeetingClick() {
+    this.meetingRequested.emit('Meeting');
   }
 
-  syncHours(task: Task) {
-    const h = task.h || 0;
-    const m = task.m || 0;
-    task.hours = h + (m / 60);
+  /** Emits clientCallRequested so ChatComponent opens Log Entry pre-set to Client Call. */
+  onClientCallClick() {
+    this.clientCallRequested.emit('Client Call');
   }
 
-  onJiraClick(msg: ChatMessage, jira: string) {
-    this.ai.addTaskToDraft(msg, {
-      project: 'Claims Portal',
-      jira: jira,
-      description: 'API development',
-      status: 'In Progress',
-      h: 2,
-      m: 0,
-      hours: 2,
-      blocker: 'None'
-    });
+  /** Navigates to the Log Entry tab so the user fills in the structured form. */
+  onAddNewTaskClick() {
+    this.addNewTaskRequested.emit();
   }
 
-  onMeetingClick(msg: ChatMessage) {
-    this.ai.addTaskToDraft(msg, {
-      project: 'Internal',
-      jira: '',
-      description: 'Meeting',
-      status: 'Done',
-      h: 1,
-      m: 0,
-      hours: 1,
-      blocker: 'None',
-      type: 'Meeting'
-    });
-  }
+  /**
+   * Resolves the current message index from the live stream and emits an EditableTask
+   * so that ChatComponent can open the form pre-filled with this task's data.
+   *
+   * @param msg      The ChatMessage that owns the task.
+   * @param task     The Task object being edited.
+   * @param taskIdx  The task's index within msg.tasks[].
+   */
+  onEditTask(msg: ChatMessage, task: Task, taskIdx: number): void {
+    const messages = this.ai.getMessagesSync();
+    const msgIndex = messages.indexOf(msg);
+    if (msgIndex === -1) return;
 
-  onClientCallClick(msg: ChatMessage) {
-    this.ai.addTaskToDraft(msg, {
-      project: 'Internal',
-      jira: '',
-      description: 'Client Call',
-      status: 'Done',
-      h: 1,
-      m: 0,
-      hours: 1,
-      blocker: 'None',
-      type: 'Client Call'
-    });
-  }
+    // Safely map Task.type → EntryType (fall back to 'Task' if unrecognised)
+    const validTypes: EntryType[] = ['Task', 'Meeting', 'Client Call'];
+    const entryType: EntryType = validTypes.includes(task.type as EntryType)
+      ? (task.type as EntryType)
+      : 'Task';
 
-  onAddNewTaskClick(msg: ChatMessage) {
-    this.ai.addTaskToDraft(msg, {
-      project: '',
-      jira: '',
-      description: '',
-      status: 'Planned',
-      h: 0,
-      m: 0,
-      hours: 0,
-      blocker: '',
-      type: 'Add New Task'
-    });
-  }
+    const payload: EditableTask = {
+      msgIndex,
+      taskIndex: taskIdx,
+      taskId: task.taskId,           // DB primary key — required to PATCH the correct row
+      entryType,
+      projectName: task.project || '',
+      description: task.description || '',
+      logTime: task.hours || 0,
+      status: task.status || 'Done',
+      blocker: task.blocker || ''
+    };
 
-  onDeleteTask(msg: ChatMessage, index: number) {
-    this.ai.removeTaskFromDraft(msg, index);
-  }
-
-  onSubmit(msg: ChatMessage) {
-    this.ai.submitTask(msg);
-  }
-
-  onEdit(msg: ChatMessage) {
-    this.ai.editTask(msg);
-  }
-
-  onCheckout() {
-    this.ai.checkout();
+    this.editTaskRequested.emit(payload);
   }
 
   ngOnDestroy() {
